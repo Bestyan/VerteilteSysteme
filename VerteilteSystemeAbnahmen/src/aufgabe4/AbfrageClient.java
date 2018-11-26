@@ -3,6 +3,7 @@ package aufgabe4;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Scanner;
 
 import aufgabe4.ClientNachricht.NachrichtenTyp;
 
@@ -47,7 +48,11 @@ public class AbfrageClient {
     }
     
     public static void main(String[] args) {
-        AbfrageClient client = new AbfrageClient("127.0.0.1");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Host?");
+        String host = scanner.next();
+        AbfrageClient client = new AbfrageClient(host);
         client.abfragen();
+        scanner.close();
     }
 }

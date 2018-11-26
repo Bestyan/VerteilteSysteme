@@ -49,9 +49,12 @@ public class AbstimmClient {
     }
 
     public static void main(String[] args) {
-        AbstimmClient client = new AbstimmClient("127.0.0.1");
-
         Scanner scanner = new Scanner(System.in);
+        
+        System.out.println("Host?");
+        String host = scanner.next();
+        AbstimmClient client = new AbstimmClient(host);
+
         ClientNachricht nachricht = stimmeErfassen(scanner);
 
         client.abstimmen(nachricht);
