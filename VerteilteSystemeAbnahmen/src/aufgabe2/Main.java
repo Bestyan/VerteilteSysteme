@@ -17,6 +17,12 @@ public class Main {
             { 4, -1, 2, 1, -2 }, 
             { -2, 1, 3, -1, 3 },
             { 0, 2, -1, 2, 4 } };
+//        int[][] a = new int[][] { 
+//            { 1, -2, 3, 4}, 
+//            { -2, 3, 0, 1}, 
+//            { 4, -1, 2, 1}, 
+//            { -2, 1, 3, -1},
+//            { 0, 2, -1, 2} };
 
         int[][] b = new int[][] { 
             { 2, -4, -1, 1, -2 }, 
@@ -24,6 +30,11 @@ public class Main {
             { 5, 0, 3, -2, -4 }, 
             { 1, -2, 1, 0, 2 },
             { 2, 3, -3, 0, 0 } };
+//        int[][] b = new int[][] { 
+//            { 2, -4, -1, 1, -2 }, 
+//            { -1, 1, -2, 2, 1 }, 
+//            { 5, 0, 3, -2, -4 }, 
+//            { 1, -2, 1, 0, 2 }};
         // @formatter:on
 
         /*
@@ -41,16 +52,16 @@ public class Main {
 
         // Aufgabenliste erstellen
         Stack<RechenAufgabe> aufgaben = new Stack<>();
-        for (int y = 0; y < a.length; y++) {
-            for (int x = 0; x < b[0].length; x++) {
+        for (int y = 0; y < a[0].length; y++) {
+            for (int x = 0; x < b.length; x++) {
                 int[] zeileA = a[y];
                 int[] spalteB = getSpalte(b, x);
                 aufgaben.push(new RechenAufgabe(zeileA, spalteB, x, y));
             }
         }
 
-        int[][] ergebnis = masterWorker(a, b, anzahlThreads, aufgaben);
-//        int[][] ergebnis = resultatsParallelismus(a, b, anzahlThreads, aufgaben);
+//        int[][] ergebnis = masterWorker(a, b, anzahlThreads, aufgaben);
+        int[][] ergebnis = resultatsParallelismus(a, b, anzahlThreads, aufgaben);
         System.out.println("---------------------------------------------");
         printMatrix(ergebnis);
     }
@@ -88,7 +99,7 @@ public class Main {
      */
     public static int[][] masterWorker(int[][] a, int[][] b, int anzahlThreads, Stack<RechenAufgabe> aufgaben) {
 
-        int[][] ergebnis = new int[a.length][b[0].length];
+        int[][] ergebnis = new int[a[0].length][b.length];
 
         Thread[] threads = new WorkerThread[anzahlThreads];
         for (int i = 0; i < threads.length; i++) {
@@ -120,7 +131,7 @@ public class Main {
     public static int[][] resultatsParallelismus(int[][] a, int[][] b, int anzahlThreads,
             Stack<RechenAufgabe> aufgaben) {
         
-        int[][] ergebnis = new int[a.length][b[0].length];
+        int[][] ergebnis = new int[a[0].length][b.length];
 
         List<Stack<RechenAufgabe>> aufgabenlisten = new ArrayList<Stack<RechenAufgabe>>();
 
