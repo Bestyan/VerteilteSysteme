@@ -12,7 +12,7 @@ public class UmfrageErgebnis implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final transient String speicherort = "umfrageErgebnis.save";
+    private static final transient String speicherort = "src/aufgabe4/umfrageErgebnis.save";
     private static final transient Object fileLock = new Object();
 
     private int anzahlJa = 0;
