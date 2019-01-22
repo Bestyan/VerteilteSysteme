@@ -87,9 +87,9 @@ public class Server {
                 try {
                     Message message = abstimmReceiver.receive();
                     System.out.println("Received abstimm Message...");
-                    System.out.println(message.toString());
                     String votum = message.getStringProperty("Stimme");
                     if(votum == null) {
+                        System.out.println(message.toString());
                     	continue;
                     }
                     votum = votum.toLowerCase();

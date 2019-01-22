@@ -22,107 +22,113 @@ import javax.naming.NamingException;
 
 public class AbstimmClient {
 
-	private QueueSession abstimmSession;
-	private QueueSender abstimmSender;
-	private TopicSession umfrageSession;
-	private TopicSubscriber umfrageSubscriber;
+    private QueueSession abstimmSession;
+    private QueueSender abstimmSender;
+    private TopicSession umfrageSession;
+    private TopicSubscriber umfrageSubscriber;
 
-	public AbstimmClient() throws NamingException, JMSException {
-		super();
+    public AbstimmClient() throws NamingException, JMSException {
+        super();
 
-		this.connectQueuesAndTopics();
+        this.connectQueuesAndTopics();
 
-		this.startUmfrageListener();
+        this.startUmfrageListener();
 
-		this.abstimmen();
-	}
+        this.abstimmen();
+    }
 
-	private void abstimmen() {
-		Scanner scanner = new Scanner(System.in);
+    private void abstimmen() {
+        Scanner scanner = new Scanner(System.in);
 
-		boolean validInput = false;
-		String input = null;
+        outer: while (true) {
+            boolean validInput = false;
+            String input = null;
 
-		while (!validInput) {
-			synchronized (System.out) {
-				System.out.println("Wie möchten Sie abstimmen?");
-			}
+            while (!validInput) {
+                synchronized (System.out) {
+                    System.out.println("Wie möchten Sie abstimmen?");
+                }
 
-			input = scanner.nextLine().toLowerCase();
-			if (input.equals("ja") || input.equals("nein") || input.equals("enthaltung")) {
-				validInput = true;
-			}
-		}
+                input = scanner.nextLine().toLowerCase();
 
-		try {
-			
-			synchronized(System.out) {
-				System.out.println("Creating abstimm Message...");
-				Message abstimmMessage = abstimmSession.createMessage();
-				abstimmMessage.setStringProperty("Stimme", input);
-				
-				System.out.println("Message created! Sending...");
-				abstimmSender.send(abstimmMessage);
-				System.out.println("Message sent!\r\n");
-			}
-			
-		} catch (JMSException e) {
-			e.printStackTrace();
-		}
+                if (input.equals("ende")) {
+                    break outer;
+                }
+                if (input.equals("ja") || input.equals("nein") || input.equals("enthaltung")) {
+                    validInput = true;
+                }
+            }
 
-		scanner.close();
-	}
+            try {
 
-	private void startUmfrageListener() {
-		new Thread(() -> {
+                synchronized (System.out) {
+                    System.out.println("Creating abstimm Message...");
+                    Message abstimmMessage = abstimmSession.createMessage();
+                    abstimmMessage.setStringProperty("Stimme", input);
 
-			while (true) {
-				try {
-					Message umfrageMessage = umfrageSubscriber.receive();
-					String umfrage = umfrageMessage.getStringProperty("umfrage");
+                    System.out.println("Message created! Sending...");
+                    abstimmSender.send(abstimmMessage);
+                    System.out.println("Message sent!\r\n");
+                }
 
-					synchronized (System.out) {
-						System.out.println("------------- neue Umfrage --------------");
-						System.out.println(umfrage);
-						System.out.println("-----------------------------------------");
-					}
+            } catch (JMSException e) {
+                e.printStackTrace();
+            }
+        }
 
-					Thread.sleep(50);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+        scanner.close();
+    }
 
-		}).start();
-	}
+    private void startUmfrageListener() {
+        new Thread(() -> {
 
-	private void connectQueuesAndTopics() throws NamingException, JMSException {
-		Properties jndiProperties = new Properties();
-		jndiProperties.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-		jndiProperties.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-		jndiProperties.put("java.naming.provider.url", Data.SERVER_URL);
+            while (true) {
+                try {
+                    Message umfrageMessage = umfrageSubscriber.receive();
+                    String umfrage = umfrageMessage.getStringProperty("umfrage");
 
-		Context context = new InitialContext(jndiProperties);
-		QueueConnectionFactory queueConnectionFactory = (QueueConnectionFactory) context.lookup("ConnectionFactory");
-		QueueConnection queueConnection = queueConnectionFactory.createQueueConnection(Data.USER, Data.PASSWORD);
-		abstimmSession = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-		Queue abstimmQueue = (Queue) context.lookup(Data.QUEUE_ABSTIMMUNG);
+                    synchronized (System.out) {
+                        System.out.println("------------- neue Umfrage --------------");
+                        System.out.println(umfrage);
+                        System.out.println("-----------------------------------------");
+                    }
 
-		abstimmSender = abstimmSession.createSender(abstimmQueue);
+                    Thread.sleep(50);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
 
-		TopicConnectionFactory topicConnectionFactory = (TopicConnectionFactory) context.lookup("ConnectionFactory");
-		TopicConnection topicConnection = topicConnectionFactory.createTopicConnection(Data.USER, Data.PASSWORD);
-		umfrageSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-		Topic umfrageTopic = (Topic) context.lookup(Data.TOPIC_UMFRAGE);
+        }).start();
+    }
 
-		umfrageSubscriber = umfrageSession.createSubscriber(umfrageTopic);
-		
-		queueConnection.start();
+    private void connectQueuesAndTopics() throws NamingException, JMSException {
+        Properties jndiProperties = new Properties();
+        jndiProperties.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+        jndiProperties.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
+        jndiProperties.put("java.naming.provider.url", Data.SERVER_URL);
+
+        Context context = new InitialContext(jndiProperties);
+        QueueConnectionFactory queueConnectionFactory = (QueueConnectionFactory) context.lookup("ConnectionFactory");
+        QueueConnection queueConnection = queueConnectionFactory.createQueueConnection(Data.USER, Data.PASSWORD);
+        abstimmSession = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue abstimmQueue = (Queue) context.lookup(Data.QUEUE_ABSTIMMUNG);
+
+        abstimmSender = abstimmSession.createSender(abstimmQueue);
+
+        TopicConnectionFactory topicConnectionFactory = (TopicConnectionFactory) context.lookup("ConnectionFactory");
+        TopicConnection topicConnection = topicConnectionFactory.createTopicConnection(Data.USER, Data.PASSWORD);
+        umfrageSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+        Topic umfrageTopic = (Topic) context.lookup(Data.TOPIC_UMFRAGE);
+
+        umfrageSubscriber = umfrageSession.createSubscriber(umfrageTopic);
+
+        queueConnection.start();
         topicConnection.start();
-	}
+    }
 
-	public static void main(String[] args) throws NamingException, JMSException {
-		AbstimmClient client = new AbstimmClient();
-	}
+    public static void main(String[] args) throws NamingException, JMSException {
+        AbstimmClient client = new AbstimmClient();
+    }
 }
